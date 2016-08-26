@@ -47,7 +47,7 @@ int main() {
         sprintf(text,"%.2f",time.read());
         
         /* Display time reading in 35px by 15px textbox at(x=55, y=40) */
-        oled.TextBox((uint8_t *)text,55,40,35,15); 
+        oled.TextBox((uint8_t *)text,55,40,35,15); //Increase textbox for more digits
              
         Thread::wait(1000);
     }
