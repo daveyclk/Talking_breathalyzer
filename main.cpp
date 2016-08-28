@@ -1,7 +1,5 @@
 #include "mbed.h"
 #include "Hexi_OLED_SSD1351.h"
-#include "OLED_types.h"
-#include "OpenSans_Font.h"
 #include "string.h"
 
 int main() {
