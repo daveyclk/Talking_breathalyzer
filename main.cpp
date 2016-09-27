@@ -84,7 +84,9 @@ char            text[20],           // Text array variables
                 text3[20];
 
 float           value[20],  // initial sensor set up values
-                value1[20]; // initial sensor set up values   
+                value1[20]; // initial sensor set up values
+
+bool            isFirstBoot = true;                   
                 
 
 /******************************************************************************
@@ -103,18 +105,17 @@ void txTask(void);
 /******************************************************************************
 * Instance setups
 *******************************************************************************/
+/* Define timer for haptic feedback */
+RtosTimer hapticTimer(StopHaptic, osTimerOnce);
+
+//set up Analog read pin for alcohol sensor
+AnalogIn Alcohol(PTB2);
 
 /* Instantiate the SSD1351 OLED Driver */ 
 SSD1351 oled(PTB22,PTB21,PTC13,PTB20,PTE6, PTD15); /* (MOSI,SCLK,POWER,CS,RST,DC) */
       
 /* Get OLED Class Default Text Properties */
 oled_text_properties_t textProperties = {0};
- 
-//set up Analog read pin for alcohol sensor
-AnalogIn Alcohol(PTB2);
-
-/* Define timer for haptic feedback */
-RtosTimer hapticTimer(StopHaptic, osTimerOnce);
 
 /* Instantiate the Hexi KW40Z Driver (UART TX, UART RX) */ 
 KW40Z kw40z_device(PTE24, PTE25);
@@ -175,7 +176,7 @@ int main()
      hang = iBreatheHang_bmp;    // You'll have a hangover image
      ini = iBreatheini_bmp;     // Initialising image
      sober = iBreatheSober_bmp;   // Sober as a judge image
-        
+       
      /* Set initial Values */
      sysinit();
 }
@@ -341,6 +342,9 @@ void StopHaptic(void const *n) {
 void ButtonUp(void)
 {
     StartHaptic();
+    
+    bool Ref = false;
+    bool Test = true;
         
     /* LED set to green for test beginning*/
     redLed      = LED_OFF;
@@ -350,15 +354,25 @@ void ButtonUp(void)
     /* Fill 96px by 96px Screen with 96px by 96px Initialising Image starting at x=0,y=0 */   
     oled.DrawImage(ini,0,0);
     
+    /* first boot bug work around to stop junk values */
+    if (isFirstBoot == true)
+    {
+        /*read ambient atmosphere levels with 10 samples and set flag to show it's ambient basline figure*/
+        ambient(1);
+        CalculatePPM(1,Ref);
+        isFirstBoot = false;
+    }
+    
     /*read ambient atmosphere levels with 10 samples and set flag to show it's ambient basline figure*/
     ambient(10);
-    CalculatePPM(10,false);
+    CalculatePPM(10,Ref);
+    
     
     /* Fill 96px by 96px Screen with 96px by 96px Blowing Image starting at x=0,y=0 */  
     oled.DrawImage(blow,0,0);
     
     /*read breathe alcohol levels with 10 samples and set flag to show it's breathilyzer test figure*/
-    CalculatePPM(10,true);
+    CalculatePPM(10,Test);
     
     /*Calculate the difference in Alcohol level based on Ambient and test sample*/
     ppm = ppm - ppm_1;
