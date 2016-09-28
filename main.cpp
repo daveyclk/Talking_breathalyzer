@@ -394,7 +394,9 @@ void ButtonUp(void)
     Thread::wait(1000);
     
     /* Currently sending to the Pressure variable as a temp place holder */
-    kw40z_device.SendPressure(ppm * 10);
+    kw40z_device.SendiBreathe(ppm); // this is used for custom Hexiware app
+    kw40z_device.SendPressure(ppm * 10); // using this to record on Wolksense Cloud
+    
     
     /* You've got a Hangover coming!*/
     if ( ppm > 200)
